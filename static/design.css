@@ -1,0 +1,173 @@
+html{
+    scroll-behavior: smooth;
+} 
+body{
+    background:black;
+}
+.Title{
+    position: relative;
+    font-size: 48px;
+    font-weight: bold;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    background: linear-gradient(
+        to right, 
+        red 30%, yellow, green, blue, rgb(101, 11, 165), violet
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: solid;
+}
+
+.text{ /* Corrected from #description to .text */
+    text-align: left;
+    font-size: 24px;
+    padding: 12px, 16px;
+    position: relative;
+    font-family: monospace;
+    color: aliceblue; 
+}
+
+.btn{
+    padding: 15px 12px;
+    margin-top: 8px;
+    border: none;
+    color:cornsilk;
+    text-align: justify;
+    font-size: 10px;
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+    text-transform: uppercase;
+    position: relative;
+    cursor:pointer;
+    background-color: slateblue;
+}
+
+.btn:hover{
+    color: crimson;
+    font-weight: bold;
+    background-color: beige;
+    animation: 2s backwards;
+    transition: 0.3s all ease;
+}
+.btn::after{
+    padding: 15px 12px;
+    content: 'CLICK TO ADD LINK OF VIDEO.';
+    text-align: justify;
+    position: relative;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color:darkblue;
+    opacity: 0;
+    background-color: beige;
+    transition: opacity 0.4s all ease;
+}
+.btn:active::after{
+    opacity: 1;
+}
+.btn:active {
+  background-color: beige; 
+}
+#summarize-form
+{
+    padding:15px 10px;
+}
+/* Loading Indicator */
+#loading-indicator {
+    display: none;
+    margin-top: 20px;
+    color: yellow;
+    font-size: 1.5rem;
+    font-family: sans-serif;
+}
+.placehd{
+    font-size: large;
+    width: 600px;
+}
+#summary-result {
+    margin-top: 40px;
+    text-align:justify ;
+    color: white; /* Ensure result container text is white */
+    font-family: sans-serif;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+.error-msg {
+    color: #ff4444;
+    border: 1px solid #ff4444;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: rgba(50, 0, 0, 0.5);
+}
+
+.summary-card {
+    background-color: #111; /* Dark grey background for the card */
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #333;
+}
+
+/* CRITICAL FIX: Ensure the summary text itself is visible */
+.summary-content {
+    color: #e0e0e0; /* Light grey text color */
+    font-size: 1.1rem;
+    margin-top: 15px;
+    line-height: 1.8;
+}
+#questionInput{
+    width: 500px;
+    height: 20px;
+    background-color: black;                 
+    color: white;
+    margin: 15px;
+    margin-left: 30px;
+
+}
+#askBtn{
+    padding: 10px 10px;
+    margin-top: 6px;
+    border: none;
+    color:cornsilk;
+    text-align: justify;
+    font-size: 8px;
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+    text-transform: uppercase;
+    position: relative;
+    cursor:pointer;
+    background-color: slateblue;
+}
+#askBtn:hover{
+    color: crimson;
+    font-weight: bold;
+    background-color: beige;
+    animation: 2s backwards;
+    transition: 0.3s all ease;
+}
+#askBtn::after{
+    padding: 10px 10px;
+    content: 'ASK';
+    text-align: justify;
+    position: relative;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color:rgb(1, 50, 199);
+    opacity: 0;
+    background-color: beige;
+    transition: opacity 0.4s all ease;
+}
+#askBtn:active::after{
+    opacity: 1;
+}
+#askBtn:active {
+  background-color: beige; 
+}

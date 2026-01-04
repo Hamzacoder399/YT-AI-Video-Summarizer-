@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube AI Video Summarizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='design.css') }}">
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="Title">YouTube AI Video Summarizer</h1>
+
+        <p class="text">
+            This website uses Mistral AI to summarize long-form youtube videos, precisely and breifly.
+        </p>
+
+        <!-- The form should only contain the input and the button -->
+        <form id="summarize-form">
+            <input type="url" 
+                   name="video_url" 
+                   id="link-input" 
+                   placeholder="Paste YouTube link here"
+                   required
+                   class="placehd"> 
+
+            <button type="submit" id="submit-btn" class="btn">
+                Summarize.
+            </button>
+        </form>
+        
+        <!-- CORRECTED PLACEMENT: Loading Indicator is OUTSIDE the form -->
+        <div id="loading-indicator" style="display: none;">
+            Generating AI Summary... Please wait...
+        </div>
+        
+        <!-- This is where the summary result will be injected -->
+        <div id="summary-result">
+            <!-- Initial content or empty -->
+        </div>
+
+    </div>
+
+    <!-- The JavaScript/AJAX Logic -->
+    <script>
+        // Use window.onload or DOMContentLoaded to ensure elements are loaded before attaching listeners
+        window.onload = function() {
+            document.getElementById('summarize-form').addEventListener('submit', function(event) {
+                // 1. Prevent Default Form Submission - CRITICAL
+                event.preventDefault(); 
+                
+                const link = document.getElementById('link-input').value;
+                const resultDiv = document.getElementById('summary-result');
+                const loadingIndicator = document.getElementById('loading-indicator');
+                const submitButton = document.getElementById('submit-btn');
+                
+                // Input Validation
+                if (!link) {
+                    // Use a message box since alerts are forbidden in the environment
+                    resultDiv.innerHTML = '<div class="error-msg">Please enter a valid YouTube link.</div>';
+                    return;
+                }
+
+                // 2. Show Loading State and Disable Button
+                resultDiv.innerHTML = ''; // Clear previous results
+                loadingIndicator.style.display = 'block'; // Show loading
+                submitButton.disabled = true; // Prevent multiple submissions
+                submitButton.innerText = "PROCESSING...";
+
+                // 3. Make the Asynchronous Request (AJAX)
+                fetch('/summarize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ video_url: link })
+                })
+                // 4. Handle the Response
+                .then(response => {
+                    // Check if the HTTP status code indicates success (200-299)
+                    if (!response.ok) {
+                        // Throw error to be caught by the .catch() block
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 5. Update the UI based on the JSON data
+                    loadingIndicator.style.display = 'none';
+                    
+                    if (data.success) {
+                        // Success case: inject the summary into the dedicated div
+                        window.promptCount = data.prompt_count || 0;
+                        window.maxPrompts = 8;
+                        window.currentVideoSummary = data.summary;
+                        window.promptCount = Number(window.promptCount) || 0;
+                        
+                        resultDiv.innerHTML = `
+                            <div class="summary-card">
+                                <h2>✅ AI Summary Generated</h2>
+                                <p class="text-gray-300"><a href="${link}"> Original Video Link </a>
+                                </p> <p class="summary-content">${data.summary}</p>
+                                <br>
+                                <p> Ask questions from the AI chatbot (Mistral AI) related to the video. (Only 8 prompts available.)</p>
+                                <input type="text" id="questionInput" placeholder="Ask a question..." />
+                                <button id="askBtn">Ask</button>
+                                <div id="answerBox"></div>
+                            </div>
+                        `;
+                         // Get elements
+                         const questionInput = document.getElementById('questionInput');
+                         const askBtn = document.getElementById('askBtn');
+                         const answerBox = document.getElementById('answerBox');
+                        let isProcessing = false;                      
+                         // Add event listener
+                         askBtn.addEventListener('click', function() {
+                            if (isProcessing) return;
+                            if (window.promptCount >= window.maxPrompts ) {
+                                 answerBox.innerHTML = `<p class="error">Prompt limit reached (${window.maxPrompts})</p>`;
+                                 askBtn.disabled = true;
+                                 return;
+                             }
+                             
+                         
+                            const question = questionInput.value.trim();
+                            if (!question) {
+                                 answerBox.innerHTML = `<p class="error">Please enter a question</p>`;
+                                 return;
+                            }
+                            //  if (window.promptCount < window.maxPrompts) {
+                            //      isProcessing = false;
+                            //      askBtn.disabled = false;
+                            //      return;
+                            //     }
+
+                             
+                             // Show loading
+                             answerBox.innerHTML = '<p>Thinking...</p>';
+                             // If user spams ask button while processing;
+                             isProcessing = true;
+                             askBtn.disabled = true;
+
+                             // Call your backend
+                             fetch('/ask', {
+                                 method: 'POST',
+                                 headers: {'Content-Type': 'application/json'},
+                                 body: JSON.stringify({
+                                     question: question,
+                                     summary: window.currentVideoSummary,
+                                     prompt_count: window.promptCount
+                                 })
+                             })
+                             .then(response => response.json())
+                             .then(qaData => {
+                                if (!qaData.success){
+                                    answerBox.innerHTML = `<p class="error">${qaData.error}</p>`;
+                                    return;
+                                }
+                                else {window.promptCount = qaData.prompt_count;
+                                answerBox.innerHTML = `
+                                  <p><strong>Q:</strong> ${question}</p>
+                                  <p><strong>A:</strong> ${qaData.answer}</p>
+                                  <p>Prompts used: ${window.promptCount}/${window.maxPrompts}</p>
+                                `;}
+                                // ✅ Also re-enable on network errors
+                                isProcessing = false;
+                                askBtn.disabled = false;
+
+                             })
+                             .catch(error => {
+                                isProcessing = false;
+                                askBtn.disabled = false;
+                                 answerBox.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                             });
+                         });
+}
+                   else {
+                        // Failure case: display the error message from the server
+                        resultDiv.innerHTML = `<div class="error-msg"><h3>❌ Error:</h3><p>${data.error}</p></div>`;
+                    }
+                })
+                .catch(error => {
+                    // Handle network errors (e.g., server offline, connection failed)
+                    loadingIndicator.style.display = 'none';
+                    console.error('Fetch error:', error);
+                    resultDiv.innerHTML = `<div class="error-msg"><h3>❌ Network Error:</h3><p>Could not connect to the summarization service. Check if given video has transcript available. Details: ${error.message}</p></div>`;
+                })
+                .finally(() => {
+                    // 6. Reset UI elements regardless of success or failure
+                    submitButton.disabled = false;
+                    isProcessing = false;
+                    submitButton.innerText = "CLICK TO ADD LINK OF VIDEO.";
+                });
+            });
+        };
+    </script>
+</body>
+</html>
